@@ -6525,6 +6525,16 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local hrp = nil
 
+
+_G.WataX_Replay = _G.WataX_Replay or false
+
+
+if not _G.WataX_Replay then
+    warn("Replay")
+    return
+end
+
+
 local function refreshHRP(char)
     if not char then
         char = player.Character or player.CharacterAdded:Wait()
@@ -6534,15 +6544,15 @@ end
 if player.Character then refreshHRP(player.Character) end
 player.CharacterAdded:Connect(refreshHRP)
 
+
 local frameTime = 1/30
 local playbackRate = 1.0
 local isRunning = false
-local routes = { MyRoute }
 
-
-routes = {
-    {"CP0 → CP8", Replay1},
+local routes = {
+    {"CP0 → CP8", Replay1}, 
 }
+
 
 local function getNearestRoute()
     local nearestIdx, dist = 1, math.huge
@@ -6560,6 +6570,7 @@ local function getNearestRoute()
     end
     return nearestIdx
 end
+
 
 local function getNearestFrameIndex(frames)
     local startIdx, dist = 1, math.huge
@@ -6579,6 +6590,7 @@ local function getNearestFrameIndex(frames)
     return startIdx
 end
 
+
 local function lerpCF(fromCF, toCF)
     local duration = frameTime / math.max(0.05, playbackRate)
     local t = 0
@@ -6592,6 +6604,7 @@ local function lerpCF(fromCF, toCF)
         end
     end
 end
+
 
 local function runRouteOnce()
     if #routes == 0 then return end
@@ -6609,6 +6622,7 @@ local function runRouteOnce()
     isRunning = false
 end
 
+
 local function runAllRoutes()
     if #routes == 0 then return end
     if not hrp then refreshHRP() end
@@ -6619,7 +6633,6 @@ local function runAllRoutes()
         if not isRunning then break end
         local frames = routes[r][2]
         if #frames < 2 then continue end
-        -- PATCH: always use nearest frame index, not just for the first route
         local startIdx = getNearestFrameIndex(frames)
         for i = startIdx, #frames - 1 do
             if not isRunning then break end
@@ -6629,6 +6642,7 @@ local function runAllRoutes()
     isRunning = false
 end
 
+
 local function stopRoute()
     if isRunning then
         print("⏹ Stop ditekan")
@@ -6636,14 +6650,13 @@ local function stopRoute()
     isRunning = false
 end
 
-local DEFAULT_HEIGHT = 2.900038719177246
 
+local DEFAULT_HEIGHT = 2.900038719177246
 local function getCurrentHeight()
     local char = player.Character or player.CharacterAdded:Wait()
     local humanoid = char:WaitForChild("Humanoid")
     return humanoid.HipHeight + (char:FindFirstChild("Head") and char.Head.Size.Y or 2)
 end
-
 local function adjustRoute(frames)
     local adjusted = {}
     local currentHeight = getCurrentHeight()
@@ -6656,7 +6669,6 @@ local function adjustRoute(frames)
     end
     return adjusted
 end
-
 for i, data in ipairs(routes) do
     data[2] = adjustRoute(data[2])
 end
@@ -6718,7 +6730,6 @@ startAll.TextScaled = true
 Instance.new("UICorner", startAll).CornerRadius = UDim.new(0,10)
 startAll.MouseButton1Click:Connect(runAllRoutes)
 
-
 local closeBtn = Instance.new("TextButton", frame)
 closeBtn.Size = UDim2.new(0,30,0,30)
 closeBtn.Position = UDim2.new(0,0,0,0)
@@ -6731,7 +6742,6 @@ Instance.new("UICorner", closeBtn).CornerRadius = UDim.new(0,8)
 closeBtn.MouseButton1Click:Connect(function()
     if screenGui then screenGui:Destroy() end
 end)
-
 
 local miniBtn = Instance.new("TextButton", frame)
 miniBtn.Size = UDim2.new(0,30,0,30)
@@ -6765,7 +6775,6 @@ bubbleBtn.MouseButton1Click:Connect(function()
     bubbleBtn.Visible = false
 end)
 
-
 local discordBtn = Instance.new("TextButton", frame)
 discordBtn.Size = UDim2.new(0,100,0,30)
 discordBtn.AnchorPoint = Vector2.new(0,1)
@@ -6776,11 +6785,11 @@ discordBtn.TextColor3 = Color3.fromRGB(255,255,255)
 discordBtn.Font = Enum.Font.GothamBold
 discordBtn.TextScaled = true
 Instance.new("UICorner", discordBtn).CornerRadius = UDim.new(0,8)
-
-
-discordBtn.Size = UDim2.new(0,100,0,30)
-discordBtn.AnchorPoint = Vector2.new(0,1)
-discordBtn.Position = UDim2.new(0,5,1,-5)
+discordBtn.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard("https://discord.gg/tfNqRQsqHK")
+    end
+end)
 
 local speedRow = Instance.new("Frame", frame)
 speedRow.Size = UDim2.new(0,160,0,30)
@@ -6826,9 +6835,4 @@ speedUp.MouseButton1Click:Connect(function()
     end
 end)
 
-discordBtn.MouseButton1Click:Connect(function()
-    if setclipboard then
-        setclipboard("https://discord.gg/tfNqRQsqHK")
-    end
-end)
-
+_G.WataX_Replay = false
